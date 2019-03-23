@@ -25,7 +25,7 @@ public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void startRecord(int sampleRate, int minSeconds, int numChannels, boolean applyFade) {
-    SuperpoweredRecorder recorder = SuperpoweredRecorder.createInstance();
+    Recorder recorder = Recorder.createInstance();
 
     if(recorder != null) {
         recorder.start(sampleRate, minSeconds, numChannels, applyFade);
@@ -34,6 +34,24 @@ public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void stopRecord(Promise promise) {
-  	promise.resolve(SuperpoweredRecorder.getInstance().stop());
+  	promise.resolve(Recorder.getInstance().stop());
+  }
+
+  @ReactMethod
+  public void initializeAudio(String filePath, int sampleRate) {
+      Audio audio = Audio.createInstance();
+	  audio.loadFile(filePath, sampleRate);
+  }
+
+  @ReactMethod
+  public void playAudio() {
+	  Audio audio = Audio.getInstance();
+	  audio.play();
+  }
+
+  @ReactMethod
+  public void pauseAudio() {
+	  Audio audio = Audio.getInstance();
+	  audio.pause();
   }
 }
