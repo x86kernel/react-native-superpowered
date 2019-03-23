@@ -1,6 +1,6 @@
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.x86kernel.rnsuperpowered">
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
 </manifest>
-  
