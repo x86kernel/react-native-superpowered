@@ -8,19 +8,22 @@
 
 class Audio {
 	public:
-		Audio(unsigned int sampleRate, unsigned int bufferSize, const char *filePath, int fileLength);
-		~Audio();
+        Audio(unsigned int sampleRate, unsigned int bufferSize, const char *filePath, int fileLength);
+        ~Audio();
 
-		bool process(short int *output, unsigned int numberOfSamples);
-		void play();
-		void pause();
+        bool process(short int *output, unsigned int numberOfSamples);
+        void play();
+        void pause();
+
+        void setEcho(float mix);
 
 	private:
-		SuperpoweredAndroidAudioIO *audioSystem;
-		SuperpoweredAdvancedAudioPlayer *playerA;
+        SuperpoweredAndroidAudioIO *audioSystem;
+        SuperpoweredAdvancedAudioPlayer *playerA;
         SuperpoweredEcho *echo;
 
-		float *stereoBuffer;
+        float *stereoBuffer;
+        float echoMix;
 };
 
 #endif

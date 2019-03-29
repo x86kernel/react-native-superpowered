@@ -4,17 +4,20 @@
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <android/log.h>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_AndroidConfiguration.h>
+
+#define log_print __android_log_print
 
 static void playerEventCallbackA (
 	void *clientData,   // &playerA
 	SuperpoweredAdvancedAudioPlayerEvent event,
 	void * __unused value
 ) {
-    if (event == SuperpoweredAdvancedAudioPlayerEvent_LoadSuccess) {
+    if(event == SuperpoweredAdvancedAudioPlayerEvent_LoadSuccess) {
     	SuperpoweredAdvancedAudioPlayer *playerA = *((SuperpoweredAdvancedAudioPlayer **)clientData);
-        playerA->setPosition(playerA->firstBeatMs, false, false);
+    	playerA->setPosition(playerA->firstBeatMs, false, false);
     };
 }
 
@@ -32,14 +35,12 @@ Audio::Audio(
     unsigned int bufferSize,
     const char *filePath,
     int fileLength
-) {
+) : echoMix(0) {
     stereoBuffer = (float *)memalign(16, bufferSize * sizeof(float) * 2);
     playerA = new SuperpoweredAdvancedAudioPlayer(&playerA, playerEventCallbackA, sampleRate, 0);
     playerA->open(filePath, 0, fileLength);
 
     echo = new SuperpoweredEcho(sampleRate);
-    echo->enable(true);
-    echo->setMix(1);
 
     audioSystem = new SuperpoweredAndroidAudioIO(
         sampleRate,
@@ -65,7 +66,7 @@ bool Audio::process (
     unsigned int numFrames
 ) {
     if(playerA->process(stereoBuffer, false, numFrames)) {
-        echo->process(stereoBuffer, stereoBuffer, numFrames);
+		if(echoMix) echo->process(stereoBuffer, stereoBuffer, numFrames);
         SuperpoweredFloatToShortInt(stereoBuffer, output, numFrames);
         return true;
     } else {
@@ -79,6 +80,19 @@ void Audio::play() {
 
 void Audio::pause() {
     playerA->pause();
+}
+
+void Audio::setEcho(float mix) {
+	if(mix) {
+		if(!echoMix) {
+			echo->enable(true);
+		}
+	} else {
+		echo->enable(false);
+	}
+
+	echo->setMix(mix > 0 ? mix : 0);
+	echoMix = mix;
 }
 
 static Audio *audio = NULL;
@@ -112,4 +126,13 @@ JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Pause(
     jobject __unused obj
 ) {
     audio->pause();
+}
+
+extern "C"
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_SetEcho(
+	JNIEnv * __unused env,
+	jobject __unused obj,
+	jfloat mix
+) {
+	audio->setEcho(mix);
 }

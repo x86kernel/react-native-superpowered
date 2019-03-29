@@ -35,7 +35,12 @@ public class Audio {
         Pause();
     }
 
+	public void setEcho(float mix) {
+	    SetEcho(mix);
+	}
+
   private native void Audio(int sampleRate, int bufferSize, String filePath, long fileLength);
   private native void Play();
   private native void Pause();
+  private native void SetEcho(float mix);
 }

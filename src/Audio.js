@@ -16,6 +16,10 @@ class Audio {
   pause = () => {
     RNSuperpowered.pauseAudio()
   }
+
+  setEcho = (mix) => {
+    RNSuperpowered.setEcho(mix)
+  }
 }
 
 export default Audio

@@ -54,4 +54,10 @@ public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
 	  Audio audio = Audio.getInstance();
 	  audio.pause();
   }
+
+  @ReactMethod
+  public void setEcho(float mix) {
+	  Audio audio = Audio.getInstance();
+	  audio.setEcho(mix);
+  }
 }
