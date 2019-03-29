@@ -16,14 +16,15 @@ class Audio {
         void pause();
 
         void setEcho(float mix);
+		void setPitchShift(int pitchShift);
 
 	private:
         SuperpoweredAndroidAudioIO *audioSystem;
         SuperpoweredAdvancedAudioPlayer *playerA;
         SuperpoweredEcho *echo;
 
-        float *stereoBuffer;
-        float echoMix;
+        float *stereoBuffer, echoMix;
+        int pitchShift;
 };
 
 #endif

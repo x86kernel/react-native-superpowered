@@ -27,20 +27,10 @@ public class Audio {
         }
     }
 
-    public void play() {
-        Play();
-    }
+    private native void Audio(int sampleRate, int bufferSize, String filePath, long fileLength);
+    public native void play();
+    public native void pause();
+    public native void setEcho(float mix);
+    public native void setPitchShift(int pitchShift);
 
-    public void pause() {
-        Pause();
-    }
-
-	public void setEcho(float mix) {
-	    SetEcho(mix);
-	}
-
-  private native void Audio(int sampleRate, int bufferSize, String filePath, long fileLength);
-  private native void Play();
-  private native void Pause();
-  private native void SetEcho(float mix);
 }

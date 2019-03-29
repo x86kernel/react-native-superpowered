@@ -60,4 +60,10 @@ public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
 	  Audio audio = Audio.getInstance();
 	  audio.setEcho(mix);
   }
+
+  @ReactMethod
+  public void setPitchShift(int pitchShift) {
+	  Audio audio = Audio.getInstance();
+	  audio.setPitchShift(pitchShift);
+  }
 }

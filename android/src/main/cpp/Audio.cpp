@@ -95,6 +95,10 @@ void Audio::setEcho(float mix) {
 	echoMix = mix;
 }
 
+void Audio::setPitchShift(int pitchShift) {
+	playerA->setPitchShift(pitchShift);
+}
+
 static Audio *audio = NULL;
 
 extern "C"
@@ -113,7 +117,7 @@ JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Audio(
 }
 
 extern "C"
-JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Play(
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_play(
     JNIEnv * __unused env,
     jobject __unused obj
 ) {
@@ -121,7 +125,7 @@ JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Play(
 }
 
 extern "C"
-JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Pause(
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_pause(
     JNIEnv * __unused env,
     jobject __unused obj
 ) {
@@ -129,10 +133,19 @@ JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Pause(
 }
 
 extern "C"
-JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_SetEcho(
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_setEcho(
 	JNIEnv * __unused env,
 	jobject __unused obj,
 	jfloat mix
 ) {
 	audio->setEcho(mix);
+}
+
+extern "C"
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_setPitchShift(
+	JNIEnv * __unused env,
+	jobject __unused obj,
+	jint pitchShift
+) {
+	audio->setPitchShift(pitchShift);
 }

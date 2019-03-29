@@ -20,6 +20,10 @@ class Audio {
   setEcho = (mix) => {
     RNSuperpowered.setEcho(mix)
   }
+
+  setPitchShift = (pitchShift) => {
+    RNSuperpowered.setPitchShift(pitchShift)
+  }
 }
 
 export default Audio
