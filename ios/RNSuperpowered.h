@@ -5,7 +5,8 @@
 #import <React/RCTBridgeModule.h>
 #endif
 
-@interface RNReactNativeSuperpowered : NSObject <RCTBridgeModule>
+
+@interface RNSuperpowered : NSObject <RCTBridgeModule> {
+}
 
 @end
-  
