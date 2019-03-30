@@ -6,14 +6,15 @@
 @interface Recorder : NSObject {
 @private
     NSString *destPath;
-    float *floatBuffer;
 }
 
-+ (instancetype) createInstance:(int)bufferSize sampleRate:(int)sampleRate minSeconds:(int)minSeconds numChannels:(int)numChannels applyFade:(bool)applyFade;
-
++ (instancetype) createInstance;
 + (instancetype) getInstance;
 
-- (void) startRecord:(NSString *)destName;
+- (instancetype) init;
+- (instancetype) initPrivate;
+
+- (void) startRecord:(NSString *)destName sampleRate:(int)sampleRate minSeconds:(int)minSeconds numChannels:(int)numChannels applyFade:(bool)applyFade;
 - (NSString *) stopRecord;
 
 @end

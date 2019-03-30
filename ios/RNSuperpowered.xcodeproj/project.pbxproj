@@ -10,6 +10,7 @@
 		92E483D3224E626E0083EE13 /* Recorder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92E483D2224E626E0083EE13 /* Recorder.mm */; };
 		92E483D7224E8EDA0083EE13 /* libSuperpoweredAudioIOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92E483CF224E5F7B0083EE13 /* libSuperpoweredAudioIOS.a */; };
 		92E483E3224E91A00083EE13 /* SuperpoweredIOSAudioIO.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92E483D9224E90A40083EE13 /* SuperpoweredIOSAudioIO.mm */; };
+		92E484D7224F53100083EE13 /* Audio.mm in Sources */ = {isa = PBXBuildFile; fileRef = 92E484D6224F53100083EE13 /* Audio.mm */; };
 		B3E7B58A1CC2AC0600A0062D /* RNSuperpowered.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* RNSuperpowered.m */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,8 @@
 		92E483DD224E90E80083EE13 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		92E483DF224E90EF0083EE13 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		92E483E1224E90FF0083EE13 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		92E484D5224F53030083EE13 /* Audio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Audio.h; sourceTree = "<group>"; };
+		92E484D6224F53100083EE13 /* Audio.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Audio.mm; sourceTree = "<group>"; };
 		B3E7B5881CC2AC0600A0062D /* RNSuperpowered.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSuperpowered.h; sourceTree = "<group>"; };
 		B3E7B5891CC2AC0600A0062D /* RNSuperpowered.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSuperpowered.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -62,6 +65,8 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				92E484D6224F53100083EE13 /* Audio.mm */,
+				92E484D5224F53030083EE13 /* Audio.h */,
 				92E483D9224E90A40083EE13 /* SuperpoweredIOSAudioIO.mm */,
 				92E483D2224E626E0083EE13 /* Recorder.mm */,
 				92E483D1224E625E0083EE13 /* Recorder.h */,
@@ -140,6 +145,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92E484D7224F53100083EE13 /* Audio.mm in Sources */,
 				92E483E3224E91A00083EE13 /* SuperpoweredIOSAudioIO.mm in Sources */,
 				92E483D3224E626E0083EE13 /* Recorder.mm in Sources */,
 				B3E7B58A1CC2AC0600A0062D /* RNSuperpowered.m in Sources */,
