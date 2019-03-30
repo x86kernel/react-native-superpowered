@@ -12,9 +12,9 @@
 RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(startRecord:(NSInteger)sampleRate minSeconds:(NSInteger)minSeconds numChannels:(NSInteger)numChannels applyFade:(BOOL)applyFade) {
-    Recorder *recorder = [Recorder createInstance];
+    Recorder *recorder = [Recorder createInstance: sampleRate minSeconds:minSeconds numChannels:numChannels applyFade:applyFade];
     
-    [recorder startRecord: @"audio" sampleRate:sampleRate minSeconds:minSeconds numChannels:numChannels applyFade:applyFade];
+    [recorder startRecord: @"audio"];
 }
 
 RCT_REMAP_METHOD(stopRecord,
@@ -27,8 +27,8 @@ RCT_REMAP_METHOD(stopRecord,
 }
 
 RCT_EXPORT_METHOD(initializeAudio:(NSString *)filePath sampleRate:(NSInteger)sampleRate) {
-    Audio *audio = [Audio createInstance];
-    [audio loadFile:filePath sampleRate:sampleRate];
+    Audio *audio = [Audio createInstance:sampleRate];
+    [audio loadFile:filePath];
 }
 
 RCT_EXPORT_METHOD(playAudio) {
@@ -37,6 +37,14 @@ RCT_EXPORT_METHOD(playAudio) {
 
 RCT_EXPORT_METHOD(pauseAudio) {
     [[Audio getInstance] pause];
+}
+
+RCT_EXPORT_METHOD(setEcho:(float)mix) {
+    [[Audio getInstance] setEcho:mix];
+}
+
+RCT_EXPORT_METHOD(setPitchShift:(int)pitchShift) {
+    [[Audio getInstance] setPitchShift:pitchShift];
 }
 
 

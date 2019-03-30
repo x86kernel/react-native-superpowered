@@ -8,18 +8,19 @@
 @implementation Audio {
     SuperpoweredAdvancedAudioPlayer *playerA;
     SuperpoweredIOSAudioIO *output;
+    SuperpoweredEcho *echo;
     
     float *stereoBuffer;
 }
 
 static Audio *instance = nil;
 
-+ (instancetype) createInstance {
++ (instancetype) createInstance:(unsigned int)sampleRate {
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
         if(!instance) {
-            instance = [[Audio alloc] initPrivate];
+            instance = [[Audio alloc] initPrivate: sampleRate];
         }
     });
     
@@ -43,6 +44,7 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
     bool silence = !self->playerA->process(self->stereoBuffer, false, numberOfSamples);
     
     if(!silence) {
+        self->echo->process(self->stereoBuffer, self->stereoBuffer, numberOfSamples);
         SuperpoweredDeInterleave(self->stereoBuffer, outputBuffers[0], outputBuffers[1], numberOfSamples);
     }
     
@@ -53,24 +55,34 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
     @throw [NSException exceptionWithName:@"Singleton Error" reason: @"" userInfo: nil];
 }
 
-- (instancetype) initPrivate {
+- (instancetype) initPrivate:(unsigned int)sampleRate {
     if(posix_memalign((void **)&stereoBuffer, 16, 4096 + 128) != 0) abort();
     
-    return [super init];
+    self = [super init];
+    
+    self->sampleRate = sampleRate;
+    self->playerA = new SuperpoweredAdvancedAudioPlayer((__bridge void *)self, playerEventCallbackA, sampleRate, 0);
+    
+    output = [[SuperpoweredIOSAudioIO alloc] initWithDelegate:(id<SuperpoweredIOSAudioIODelegate>)self preferredBufferSize:12 preferredSamplerate:sampleRate audioSessionCategory:AVAudioSessionCategoryPlayback channels:2 audioProcessingCallback:audioProcessing clientdata:(__bridge void *)self];
+    
+    self->echo = new SuperpoweredEcho(sampleRate);
+    
+    return self;
 }
 
-- (void) loadFile:(NSString *)filePath sampleRate:(unsigned int)sampleRate {
+- (void) loadFile:(NSString *)filePath {
     NSFileManager *fileManager = [NSFileManager defaultManager];
+    
     if(![fileManager fileExistsAtPath:filePath]) {
         @throw [NSException exceptionWithName:@"Audio file not exists" reason: @"" userInfo: nil];
     }
     
-    NSInteger fileSize = [[fileManager attributesOfItemAtPath:filePath error:nil] fileSize];
-    
+    if(playerA) {
+        delete playerA;
+    }
+
     playerA = new SuperpoweredAdvancedAudioPlayer((__bridge void *)self, playerEventCallbackA, sampleRate, 0);
-    playerA->open([filePath UTF8String], 0, fileSize);
-    
-    output = [[SuperpoweredIOSAudioIO alloc] initWithDelegate:(id<SuperpoweredIOSAudioIODelegate>)self preferredBufferSize:12 preferredSamplerate:sampleRate audioSessionCategory:AVAudioSessionCategoryPlayback channels:2 audioProcessingCallback:audioProcessing clientdata:(__bridge void *)self];
+    playerA->open([filePath UTF8String]);
 }
 
 - (void) play {
@@ -81,6 +93,23 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
 - (void) pause {
     [output stop];
     playerA->pause();
+}
+
+- (void) setEcho:(float)mix {
+    if(mix) {
+        if(!echoMix) {
+            echo->enable(true);
+        }
+    } else {
+        echo->enable(false);
+    }
+    
+    echo->setMix(mix > 0 ? mix : 0);
+    echoMix = mix;
+}
+
+- (void) setPitchShift:(int)pitchShift {
+    playerA->setPitchShift(pitchShift);
 }
 
 - (void) interruptionStarted {}

@@ -8,13 +8,13 @@
     NSString *destPath;
 }
 
-+ (instancetype) createInstance;
++ (instancetype) createInstance:(int)sampleRate minSeconds:(int)minSeconds numChannels:(int)numChannels applyFade:(bool)applyFade;
 + (instancetype) getInstance;
 
 - (instancetype) init;
-- (instancetype) initPrivate;
+- (instancetype) initPrivate:(int)sampleRate minSeconds:(int)minSeconds numChannels:(int)numChannels applyFade:(bool)applyFade;
 
-- (void) startRecord:(NSString *)destName sampleRate:(int)sampleRate minSeconds:(int)minSeconds numChannels:(int)numChannels applyFade:(bool)applyFade;
+- (void) startRecord:(NSString *)destName;
 - (NSString *) stopRecord;
 
 @end
