@@ -1,13 +1,23 @@
 
 {
   "name": "react-native-superpowered",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Implementation of the Superpowered audio engine SDK For React Native",
   "main": "index.js",
   "keywords": [
     "react-native"
   ],
-  "author": "",
+  "scripts": {
+    "postinstall": "git clone --depth 1 https://github.com/superpoweredSDK/Low-Latency-Android-iOS-Linux-Windows-tvOS-macOS-Interactive-Audio-Platform Superpowered && cd Superpowered && git filter-branch --prune-empty --subdirectory-filter Superpowered HEAD"
+  },
+  "author": {
+    "name": "x86kernel",
+    "email": "x86kernel@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/x86kernel/react-native-superpowered"
+  },
   "license": "",
   "peerDependencies": {
   }
