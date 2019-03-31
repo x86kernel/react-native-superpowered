@@ -3,6 +3,8 @@
 #import "SuperpoweredIOSAudioIO.h"
 #import "SuperpoweredEcho.h"
 #import "SuperpoweredSimple.h"
+#import "SuperpoweredDecoder.h"
+#import "SuperpoweredRecorder.h"
 
 
 @implementation Audio {
@@ -32,9 +34,17 @@ static Audio *instance = nil;
 }
 
 void playerEventCallbackA(void *clientData, SuperpoweredAdvancedAudioPlayerEvent event, void *value) {
-    if (event == SuperpoweredAdvancedAudioPlayerEvent_LoadSuccess) {
-        Audio *self = (__bridge Audio *)clientData;
-        self->playerA->setPosition(self->playerA->firstBeatMs, false, false);
+    Audio *self = (__bridge Audio *)clientData;
+    
+    switch(event) {
+        case SuperpoweredAdvancedAudioPlayerEvent_LoadSuccess:
+            self->playerA->setPosition(self->playerA->firstBeatMs, false, false);
+            break;
+        case SuperpoweredAdvancedAudioPlayerEvent_EOF:
+            self->playerA->pause();
+            break;
+        default:
+            break;
     }
 }
 
@@ -83,11 +93,13 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
 
     playerA = new SuperpoweredAdvancedAudioPlayer((__bridge void *)self, playerEventCallbackA, sampleRate, 0);
     playerA->open([filePath UTF8String]);
+    
+    loadedFile = filePath;
 }
 
 - (void) play {
     [output start];
-    playerA->play(false);
+    playerA->togglePlayback();
 }
 
 - (void) pause {
@@ -110,6 +122,67 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
 
 - (void) setPitchShift:(int)pitchShift {
     playerA->setPitchShift(pitchShift);
+}
+
+- (NSString *) process:(NSString *)fileName {
+    SuperpoweredDecoder *decoder = new SuperpoweredDecoder();
+    const char *openError = decoder->open([loadedFile UTF8String], false, 0, 0);
+    
+    float progress;
+    
+    if(openError) {
+        delete decoder;
+        @throw [NSException exceptionWithName:@"FAILED_OPEN_AUDIO_FILE" reason: @"Cannot open audio file" userInfo: nil];
+    }
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    
+    NSString *filePath = [documentsDirectory stringByAppendingPathComponent:[fileName stringByAppendingString:@".wav"]];
+    
+    [self deleteFileAtPath:filePath];
+    FILE *fd = createWAV([filePath UTF8String], decoder->samplerate, 2);
+    
+    if (!fd) {
+        delete decoder;
+        @throw [NSException exceptionWithName:@"FAILED_CREATE_AUDIO_FILE" reason: @"Failed to create audio file" userInfo: nil];
+    }
+    
+    short int *intBuffer = (short int *)malloc(decoder->samplesPerFrame * 2 * sizeof(short int) + 32768);
+    float *floatBuffer = (float *)malloc(decoder->samplesPerFrame * 2 * sizeof(float) + 32768);
+    
+    while (true) {
+        unsigned int samplesDecoded = decoder->samplesPerFrame;
+        
+        if (decoder->decode(intBuffer, &samplesDecoded) == SUPERPOWEREDDECODER_ERROR) break;
+        if (samplesDecoded < 1) break;
+        
+        SuperpoweredShortIntToFloat(intBuffer, floatBuffer, samplesDecoded);
+        
+        if(echoMix) {
+            echo->process(floatBuffer, floatBuffer, samplesDecoded);
+        }
+        
+        SuperpoweredFloatToShortInt(floatBuffer, intBuffer, samplesDecoded);
+        
+        fwrite(intBuffer, 1, samplesDecoded * 4, fd);
+        
+        progress = (double)decoder->samplePosition / (double)decoder->durationSamples;
+    }
+    
+    delete decoder;
+    free(intBuffer);
+    free(floatBuffer);
+    
+    return filePath;
+}
+
+- (void) deleteFileAtPath:(NSString *)path {
+    NSFileManager *manager = [NSFileManager defaultManager];
+    
+    if([manager fileExistsAtPath:path]) {
+        [manager removeItemAtPath:path error: nil];
+    }
 }
 
 - (void) interruptionStarted {}

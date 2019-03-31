@@ -4,8 +4,9 @@
 #import <Foundation/Foundation.h>
 
 @interface Audio : NSObject {
-    unsigned int sampleRate;
+    NSString *loadedFile;
     
+    unsigned int sampleRate;
     int pitchShift;
     float echoMix;
 }
@@ -17,10 +18,14 @@
 - (instancetype) initPrivate:(unsigned int)sampleRate;
 
 - (void) loadFile:(NSString *)filePath;
+
 - (void) play;
 - (void) pause;
+
 - (void) setEcho:(float)mix;
 - (void) setPitchShift:(int)pitchShift;
+
+- (NSString *) process:(NSString *)fileName;
 
 @end
 

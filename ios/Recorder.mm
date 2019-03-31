@@ -69,7 +69,7 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
     NSString *documentsDirectory = [paths objectAtIndex:0];
     
     destPath = [documentsDirectory stringByAppendingPathComponent:destName];
-    [self deleteFileAtPath:[destPath stringByAppendingString:@".wav"]];
+    [self deleteFileAtPath:[self getRecordFileName]];
 
     const char *dest = [destPath UTF8String];
     
@@ -81,8 +81,10 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
     [audioIO stop];
     recorder->stop();
     
-    return [destPath stringByAppendingString:@".wav"];
+    return [self getRecordFileName];
 }
+
+- (NSString *) getRecordFileName { return [destPath stringByAppendingString:@".wav"]; };
 
 - (void) interuptionStarted {}
 - (void) recordPermissionRefused {}

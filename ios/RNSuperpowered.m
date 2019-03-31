@@ -31,6 +31,10 @@ RCT_EXPORT_METHOD(initializeAudio:(NSString *)filePath sampleRate:(NSInteger)sam
     [audio loadFile:filePath];
 }
 
+RCT_EXPORT_METHOD(loadFile:(NSString *)filePath) {
+    [[Audio getInstance] loadFile:filePath];
+}
+
 RCT_EXPORT_METHOD(playAudio) {
     [[Audio getInstance] play];
 }
@@ -47,5 +51,24 @@ RCT_EXPORT_METHOD(setPitchShift:(int)pitchShift) {
     [[Audio getInstance] setPitchShift:pitchShift];
 }
 
+RCT_REMAP_METHOD(process,
+                 filePath:(NSString *)fileName
+                 resolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject) {
+    Audio *audio = [Audio getInstance];
+    
+    @try {
+        NSString *filePath = [audio process:fileName];
+        
+        NSMutableDictionary *response = [[NSMutableDictionary alloc] init];
+        response[@"uri"] = filePath;
+        response[@"isSuccess"] = @YES;
+            
+        resolve(response);
+        
+    } @catch (NSException *exception) {
+        reject(exception.name, exception.reason, nil);
+    }
+}
 
 @end
