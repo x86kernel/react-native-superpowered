@@ -1,9 +1,12 @@
 #include "Audio.h"
 #include <SuperpoweredSimple.h>
 #include <SuperpoweredCPU.h>
+#include <SuperpoweredDecoder.h>
+#include <SuperpoweredRecorder.h>
 #include <jni.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <android/log.h>
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_AndroidConfiguration.h>
@@ -11,7 +14,7 @@
 #define log_print __android_log_print
 
 static void playerEventCallbackA (
-	void *clientData,   // &playerA
+	void *clientData,
 	SuperpoweredAdvancedAudioPlayerEvent event,
 	void * __unused value
 ) {
@@ -22,26 +25,23 @@ static void playerEventCallbackA (
 }
 
 static bool audioProcessing (
-    void *clientdata,
+    void *clientData,
     short int *audioIO,
     int numFrames,
-    int __unused samplerate
+    int __unused sampleRate
 ) {
-    return ((Audio *)clientdata)->process(audioIO, (unsigned int)numFrames);
+    return ((Audio *)clientData)->audioProcess(audioIO, (unsigned int)numFrames);
 }
 
 Audio::Audio(
     unsigned int sampleRate,
-    unsigned int bufferSize,
-    const char *filePath,
-    int fileLength
+    unsigned int bufferSize
 ) : echoMix(0) {
     stereoBuffer = (float *)memalign(16, bufferSize * sizeof(float) * 2);
-    playerA = new SuperpoweredAdvancedAudioPlayer(&playerA, playerEventCallbackA, sampleRate, 0);
-    playerA->open(filePath, 0, fileLength);
 
     echo = new SuperpoweredEcho(sampleRate);
 
+    playerA = NULL;
     audioSystem = new SuperpoweredAndroidAudioIO(
         sampleRate,
         bufferSize,
@@ -52,6 +52,8 @@ Audio::Audio(
         -1,
         SL_ANDROID_STREAM_MEDIA
     );
+
+    this->sampleRate = sampleRate;
 }
 
 Audio::~Audio() {
@@ -61,17 +63,28 @@ Audio::~Audio() {
     free(stereoBuffer);
 }
 
-bool Audio::process (
+bool Audio::audioProcess (
     short int *output,
     unsigned int numFrames
 ) {
     if(playerA->process(stereoBuffer, false, numFrames)) {
-		if(echoMix) echo->process(stereoBuffer, stereoBuffer, numFrames);
+        if(echoMix) echo->process(stereoBuffer, stereoBuffer, numFrames);
         SuperpoweredFloatToShortInt(stereoBuffer, output, numFrames);
         return true;
     } else {
         return false;
     }
+}
+
+void Audio::loadFile(const char *filePath, int offset, long fileLength) {
+    if(playerA != NULL) {
+        delete playerA;
+    }
+
+    playerA = new SuperpoweredAdvancedAudioPlayer(&playerA, playerEventCallbackA, this->sampleRate, 0);
+    playerA->open(filePath, 0, fileLength);
+
+    loadedFile = strdup(filePath);
 }
 
 void Audio::play() {
@@ -83,12 +96,12 @@ void Audio::pause() {
 }
 
 void Audio::setEcho(float mix) {
-	if(mix) {
-		if(!echoMix) {
-			echo->enable(true);
-		}
-	} else {
-		echo->enable(false);
+    if(mix) {
+        if(!echoMix) {
+            echo->enable(true);
+        }
+    } else {
+        echo->enable(false);
 	}
 
 	echo->setMix(mix > 0 ? mix : 0);
@@ -96,23 +109,83 @@ void Audio::setEcho(float mix) {
 }
 
 void Audio::setPitchShift(int pitchShift) {
-	playerA->setPitchShift(pitchShift);
+    playerA->setPitchShift(pitchShift);
+}
+
+bool Audio::process(const char *filePath) {
+    SuperpoweredDecoder *decoder = new SuperpoweredDecoder();
+    const char *openError = decoder->open(loadedFile, false, 0, 0);
+    
+    float progress;
+
+    if(openError) {
+        delete decoder;
+        return false;
+    }
+    
+    FILE *fd = createWAV(filePath, decoder->samplerate, 2);
+    
+    if (!fd) {
+        delete decoder;
+        return false;
+    }
+    
+    short int *intBuffer = (short int *)malloc(decoder->samplesPerFrame * 2 * sizeof(short int) + 32768);
+    float *floatBuffer = (float *)malloc(decoder->samplesPerFrame * 2 * sizeof(float) + 32768);
+    
+    while (true) {
+        unsigned int samplesDecoded = decoder->samplesPerFrame;
+        
+        if (decoder->decode(intBuffer, &samplesDecoded) == SUPERPOWEREDDECODER_ERROR) break;
+        if (samplesDecoded < 1) break;
+        
+        SuperpoweredShortIntToFloat(intBuffer, floatBuffer, samplesDecoded);
+        
+        if(echoMix) {
+            echo->process(floatBuffer, floatBuffer, samplesDecoded);
+        }
+        
+        SuperpoweredFloatToShortInt(floatBuffer, intBuffer, samplesDecoded);
+        
+        fwrite(intBuffer, 1, samplesDecoded * 4, fd);
+        
+        progress = (double)decoder->samplePosition / (double)decoder->durationSamples;
+    }
+    
+    delete decoder;
+    free(intBuffer);
+    free(floatBuffer);
+    
+    return true;
 }
 
 static Audio *audio = NULL;
 
 extern "C"
-JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_Audio(
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_initializeAudio(
     JNIEnv *env,
     jobject __unused obj,
     jint sampleRate,
-    jint bufferSize,
+    jint bufferSize
+) {
+    if(audio != NULL) {
+        delete audio;
+    }
+
+    audio = new Audio((unsigned int)sampleRate, (unsigned int)bufferSize);
+}
+
+extern "C"
+JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_loadFile(
+    JNIEnv *env,
+    jobject __unused obj,
     jstring filePath,
     jlong fileLength
 ) {
     const char *path = env->GetStringUTFChars(filePath, JNI_FALSE);
 
-    audio = new Audio((unsigned int)sampleRate, (unsigned int)bufferSize, path, fileLength);
+	audio->loadFile(path, 0, fileLength);
+
     env->ReleaseStringUTFChars(filePath, path);
 }
 
@@ -148,4 +221,17 @@ JNIEXPORT void Java_com_x86kernel_rnsuperpowered_Audio_setPitchShift(
 	jint pitchShift
 ) {
 	audio->setPitchShift(pitchShift);
+}
+
+extern "C"
+JNIEXPORT jboolean Java_com_x86kernel_rnsuperpowered_Audio_process(
+	JNIEnv * env,
+	jobject __unused obj,
+	jstring filePath
+) {
+    const char *path = env->GetStringUTFChars(filePath, JNI_FALSE);
+
+    return audio->process(path);
+
+    env->ReleaseStringUTFChars(filePath, path);
 }

@@ -8,21 +8,28 @@
 
 class Audio {
 	public:
-        Audio(unsigned int sampleRate, unsigned int bufferSize, const char *filePath, int fileLength);
+        Audio(unsigned int sampleRate, unsigned int bufferSize);
         ~Audio();
 
-        bool process(short int *output, unsigned int numberOfSamples);
+	    void loadFile(const char *filePath, int offset, long fileLength);
+        bool audioProcess(short int *output, unsigned int numberOfSamples);
+
         void play();
         void pause();
 
         void setEcho(float mix);
-		void setPitchShift(int pitchShift);
+	    void setPitchShift(int pitchShift);
+
+        bool process(const char *filePath);
 
 	private:
         SuperpoweredAndroidAudioIO *audioSystem;
         SuperpoweredAdvancedAudioPlayer *playerA;
         SuperpoweredEcho *echo;
 
+        char *loadedFile;
+
+        unsigned int sampleRate;
         float *stereoBuffer, echoMix;
         int pitchShift;
 };

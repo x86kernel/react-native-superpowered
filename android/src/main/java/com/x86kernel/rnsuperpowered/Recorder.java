@@ -8,47 +8,57 @@ import android.support.v4.content.ContextCompat;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 public class Recorder {
-	private static Recorder recorderInstance;
-    private String tmpFile, dstFile;
+    private static Recorder instance = null;
+    private static String tmpPath, dstPath;
 
-	private Recorder() {}
+    private Recorder() {}
 
-	public static Recorder createInstance() {
+    public static Recorder createInstance(String tmpFile, int sampleRate, int minSeconds, int numChannels, boolean applyFade) {
+        if(instance != null) {
+            return instance;
+        }
+
         ReactApplicationContext context = RNSuperpoweredModule.getReactContextSingleton();
 
         int permissionCheck = ContextCompat.checkSelfPermission(context.getCurrentActivity(), 
                 Manifest.permission.RECORD_AUDIO);
 
-    	boolean permissionGranted = permissionCheck == PackageManager.PERMISSION_GRANTED;
-
+        boolean permissionGranted = permissionCheck == PackageManager.PERMISSION_GRANTED;
 
         if(permissionGranted) {
             System.loadLibrary("Recorder");
 
-            recorderInstance = new Recorder();
-            return recorderInstance;
+	        String documentDirectoryPath = RNSuperpoweredModule.getReactContextSingleton().getFilesDir().getAbsolutePath();
+            tmpPath = documentDirectoryPath + "/" + tmpFile;
+
+            initializeRecorder(tmpPath, 480, sampleRate, minSeconds, numChannels, applyFade);
+
+            instance = new Recorder();
+            return instance;
         }
 
         return null;
-	}
+    }
 
-	public static Recorder getInstance() {
-		return recorderInstance;
-	}
+    public static Recorder getInstance() {
+        return instance;
+    }
 
-	public void start(int sampleRate, int minSeconds, int numChannels, boolean applyFade) {
-      String documentDirectoryPath = RNSuperpoweredModule.getReactContextSingleton().getFilesDir().getAbsolutePath();
-      tmpFile = documentDirectoryPath + "/temp.wav";
-      dstFile = documentDirectoryPath + "/audio";
-      
-	  StartRecord(tmpFile, dstFile, 480, sampleRate, minSeconds, numChannels, applyFade);
-	}
+    public void start(String dstFile) {
+        String documentDirectoryPath = RNSuperpoweredModule.getReactContextSingleton().getFilesDir().getAbsolutePath();
+        dstPath = documentDirectoryPath + "/" + dstFile;
 
-	public String stop() {
-		StopRecord();
-        return dstFile + ".wav";
-	}
+        startRecord(dstPath);
+    }
 
-  private native void StartRecord(String tempPath, String dstPath, int buffersize, int sampleRate, int minSeconds, int numChannels, boolean applyFade);
-  private native void StopRecord();
+    public String stop() {
+        stopRecord();
+
+        return dstPath + ".wav";
+    }
+
+    private static native void initializeRecorder(String tempPath, int bufferSize, int sampleRate, int minSeconds, int numChannels, boolean applyFade);
+
+    private native void startRecord(String dstPath);
+    private native void stopRecord();
 }
