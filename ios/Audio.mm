@@ -135,10 +135,7 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
         @throw [NSException exceptionWithName:@"FAILED_OPEN_AUDIO_FILE" reason: @"Cannot open audio file" userInfo: nil];
     }
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    
-    NSString *filePath = [documentsDirectory stringByAppendingPathComponent:[fileName stringByAppendingString:@".wav"]];
+    NSString *filePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[fileName stringByAppendingString:@".wav"]];
     
     [self deleteFileAtPath:filePath];
     FILE *fd = createWAV([filePath UTF8String], decoder->samplerate, 2);

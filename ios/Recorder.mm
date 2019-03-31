@@ -41,10 +41,7 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
 - (instancetype) initPrivate:(int)sampleRate minSeconds:(int)minSeconds numChannels:(int)numChannels applyFade:(bool)applyFade {
     self = [super init];
     
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    
-    NSString *tempPath = [documentsDirectory stringByAppendingPathComponent:@"temp.wav"];
+    NSString *tempPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"temp.wav"];
     [self deleteFileAtPath:tempPath];
     
     const char *temp = [tempPath UTF8String];
@@ -65,10 +62,7 @@ static bool audioProcessing(void *clientData, float **inputBuffers, unsigned int
 }
 
 - (void) startRecord:(NSString *)destName {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    
-    destPath = [documentsDirectory stringByAppendingPathComponent:destName];
+    destPath = [NSTemporaryDirectory() stringByAppendingPathComponent:destName];
     [self deleteFileAtPath:[self getRecordFileName]];
 
     const char *dest = [destPath UTF8String];
