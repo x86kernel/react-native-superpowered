@@ -7,22 +7,25 @@ const { RNSuperpowered } = NativeModules
 class Audio {
   constructor(filePath, sampleRate) {
     RNSuperpowered.initializeAudio(filePath, sampleRate)
+    this._initialized = true
   }
 
-  play = () => {
-    RNSuperpowered.playAudio()
-  }
+  loadFile = (filePath) => RNSuperpowered.loadFile(filePath)
 
-  pause = () => {
-    RNSuperpowered.pauseAudio()
-  }
+  play = () => RNSuperpowered.playAudio()
+  pause = () => RNSuperpowered.pauseAudio()
+  stop = () => RNSuperpowered.stopAudio()
+  setPosition = (ms) => RNSuperpowered.setPosition(ms)
 
-  setEcho = (mix) => {
-    RNSuperpowered.setEcho(mix)
-  }
+  setEcho = (mix) => RNSuperpowered.setEcho(mix)
+  setPitchShift = (pitchShift) => RNSuperpowered.setPitchShift(pitchShift)
 
-  setPitchShift = (pitchShift) => {
-    RNSuperpowered.setPitchShift(pitchShift)
+  process = (filePath = '') => {
+    if(!filePath) {
+      filePath = (Math.random() + 1).toString(36).substr(2, 10)
+    }
+
+    return RNSuperpowered.process(filePath)
   }
 }
 
