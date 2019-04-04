@@ -107,7 +107,6 @@ void Audio::pause() {
 }
 
 void Audio::setPosition(double ms) {
-    playerA->pause();
     playerA->setPosition(ms, false, false);
 }
 

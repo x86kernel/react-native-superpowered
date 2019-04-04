@@ -64,7 +64,10 @@ public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void stopAudio() {
-      Audio.getInstance().setPosition(0);
+	  Audio audio = Audio.getInstance();
+
+	  audio.pause();
+      audio.setPosition(0);
   }
 
   @ReactMethod
