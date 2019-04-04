@@ -1,10 +1,14 @@
 package com.x86kernel.rnsuperpowered;
 
+import java.util.HashMap;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeMap;
 
 public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
   private static ReactApplicationContext _reactContext;
@@ -25,45 +29,67 @@ public class RNSuperpoweredModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void startRecord(int sampleRate, int minSeconds, int numChannels, boolean applyFade) {
-    Recorder recorder = Recorder.createInstance();
+    Recorder recorder = Recorder.createInstance("temp.wav", sampleRate, minSeconds, numChannels, applyFade);
 
     if(recorder != null) {
-        recorder.start(sampleRate, minSeconds, numChannels, applyFade);
+        recorder.start("audio");
     }
   }
 
   @ReactMethod
   public void stopRecord(Promise promise) {
-  	promise.resolve(Recorder.getInstance().stop());
+      promise.resolve(Recorder.getInstance().stop());
   }
 
   @ReactMethod
   public void initializeAudio(String filePath, int sampleRate) {
-      Audio audio = Audio.createInstance();
-	  audio.loadFile(filePath, sampleRate);
+      Audio audio = Audio.createInstance(sampleRate);
+	  audio.loadFile(filePath);
+  }
+
+  @ReactMethod
+  public void loadFile(String filePath) {
+      Audio.getInstance().loadFile(filePath);
   }
 
   @ReactMethod
   public void playAudio() {
-	  Audio audio = Audio.getInstance();
-	  audio.play();
+      Audio.getInstance().play();
   }
 
   @ReactMethod
   public void pauseAudio() {
-	  Audio audio = Audio.getInstance();
-	  audio.pause();
+      Audio.getInstance().pause();
+  }
+
+  @ReactMethod
+  public void stopAudio() {
+      Audio.getInstance().setPosition(0);
+  }
+
+  @ReactMethod
+  public void setPosition(double ms) {
+      Audio.getInstance().setPosition(ms);
   }
 
   @ReactMethod
   public void setEcho(float mix) {
-	  Audio audio = Audio.getInstance();
-	  audio.setEcho(mix);
+      Audio.getInstance().setEcho(mix);
   }
 
   @ReactMethod
   public void setPitchShift(int pitchShift) {
-	  Audio audio = Audio.getInstance();
-	  audio.setPitchShift(pitchShift);
+      Audio.getInstance().setPitchShift(pitchShift);
+  }
+
+  @ReactMethod
+  public void process(String filePath, Promise promise) {
+      String outputFile = Audio.getInstance().processToFile(filePath);
+    
+      WritableMap response = new WritableNativeMap();
+      response.putString("uri", outputFile);
+      response.putBoolean("isSuccess", true);
+      
+      promise.resolve(response);
   }
 }

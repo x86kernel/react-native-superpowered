@@ -22,7 +22,7 @@ const Recorder = {
   },
   start: ({ sampleRate, minSeconds, numChannels, applyFade } = {
     sampleRate: 48000,
-    minSeconds: 1,
+    minSeconds: 0,
     numChannels: 2,
     applyFade: false,
   }) => RNSuperpowered.startRecord(sampleRate, minSeconds, numChannels, applyFade),
