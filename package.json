@@ -1,6 +1,6 @@
 {
   "name": "react-native-superpowered",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Implementation of the Superpowered audio engine SDK For React Native",
   "main": "index.js",
   "keywords": [
