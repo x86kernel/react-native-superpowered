@@ -7,7 +7,7 @@
     "react-native"
   ],
   "scripts": {
-    "postinstall": "git clone --progress --verbose --depth 1 https://github.com/superpoweredSDK/Low-Latency-Android-iOS-Linux-Windows-tvOS-macOS-Interactive-Audio-Platform Superpowered && cd Superpowered && git filter-branch --prune-empty --subdirectory-filter Superpowered HEAD"
+    "postinstall": "git clone https://github.com/superpoweredSDK/Low-Latency-Android-iOS-Linux-Windows-tvOS-macOS-Interactive-Audio-Platform Superpowered && cd Superpowered && git checkout b37387fce81a5d1b4cda8b505d86ff74c52aa98e && git filter-branch --prune-empty --subdirectory-filter Superpowered HEAD"
   },
   "author": {
     "name": "x86kernel",
